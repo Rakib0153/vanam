@@ -1,0 +1,18 @@
+# Don't track secret config files
+.env
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore OS system files
+.DS_Store
+Thumbs.db
+
+# Ignore virtual environments
+venv/
+env/
+
+# Ignore IDE/editor settings (optional)
+.vscode/
+.idea/
