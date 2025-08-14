@@ -21,8 +21,8 @@ app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')
 # Database configuration
 #app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://username:password@localhost/task_manager')
 # Neon db
-#app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://neondb_owner:npg_SDi5EoXCzLW6@ep-winter-frost-a145a81d-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://neondb_owner:npg_SDi5EoXCzLW6@ep-winter-frost-a145a81d-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
+#app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://neondb_owner:npg_SDi5EoXCzLW6@ep-winter-frost-a145a81d-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -1077,4 +1077,5 @@ if __name__ == '__main__':
         db.create_all()
 
     app.run(debug=True)
+
 
