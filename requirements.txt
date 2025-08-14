@@ -2,10 +2,8 @@ Flask==2.3.2
 Flask-SQLAlchemy==3.0.3
 python-dotenv==1.0.0
 twilio==8.3.0
-psycopg2-binary==2.9.6
+psycopg[binary]==3.2.9
 pytz==2023.3
 gunicorn
 SQLAlchemy
-psycopg[binary]==3.2.1
 pandas
-
