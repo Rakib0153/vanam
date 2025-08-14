@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Task Details: {{ task.title }}</h2>
+    <a href="{{ url_for('home') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">{{ task.title }}</h5>
+        <p class="card-text">{{ task.description or 'No description provided' }}</p>
+        <div class="row">
+            <div class="col-md-4">
+                <p><strong>Assigned To:</strong> {{ task.assignee.name if task.assignee else 'Unassigned' }}</p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Status:</strong> 
+                    <span class="badge 
+                        {% if task.status == 'Completed' %}bg-success
+                        {% elif task.status == 'In Progress' %}bg-primary
+                        {% else %}bg-secondary{% endif %}">
+                        {{ task.status }}
+                    </span>
+                </p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Priority:</strong> 
+                    <span class="badge 
+                        {% if task.priority == 'High' %}bg-danger
+                        {% elif task.priority == 'Medium' %}bg-warning text-dark
+                        {% else %}bg-success{% endif %}">
+                        {{ task.priority }}
+                    </span>
+                </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <p><strong>Deadline:</strong> {{ task.deadline.strftime('%Y-%m-%d') if task.deadline else 'N/A' }}</p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Assigned By:</strong> {{ task.assigner.employee.name if task.assigner else 'N/A' }}</p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Last Updated:</strong> {{ task.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Task Updates -->
+<div class="card">
+    <div class="card-header">
+        <h5>Task Updates</h5>
+    </div>
+    <div class="card-body">
+        {% if not updates %}
+            <p>No updates yet.</p>
+        {% else %}
+            {% for update in updates %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="badge 
+                            {% if update.status == 'Completed' %}bg-success
+                            {% elif update.status == 'In Progress' %}bg-primary
+                            {% else %}bg-secondary{% endif %}">
+                            {{ update.status }}
+                            {% if update.source == 'whatsapp' %}
+                            <i class="bi bi-whatsapp ms-1"></i>
+                            {% endif %}
+                        </span>
+                        <small class="text-muted">{{ update.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
+                    <p>{{ update.update_text }}</p>
+                    <div class="text-end">
+                        <small class="text-muted">- {{ update.updater.name }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- WhatsApp Instruction Card -->
+<div class="card mt-4">
+    <div class="card-header bg-success text-white">
+        <h5><i class="bi bi-whatsapp"></i> Update via WhatsApp</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6>How to update:</h6>
+                <div class="alert alert-light border">
+                    <code>Update: {{ task.id }} [status] [your message]</code>
+                    <hr>
+                    <strong>Examples:</strong>
+                    <ul class="mt-2">
+                        <li><code>Update: {{ task.id }} in progress Working on section 3</code></li>
+                        <li><code>Update: {{ task.id }} completed Finished all tasks</code></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6>Status Options:</h6>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Pending
+                        <span class="badge bg-secondary">Not started</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        In Progress
+                        <span class="badge bg-primary">Working</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Completed
+                        <span class="badge bg-success">Done</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Task Review (Visible to Leader) -->
+{% if is_leader and task.status == 'Completed' %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Task Review</h5>
+    </div>
+    <div class="card-body">
+        {% if task.review %}
+        <div class="mb-3">
+            <strong>Current Rating:</strong>
+            <div class="rating-display">
+                {% for i in range(1,6) %}
+                <i class="bi bi-star{% if i > task.review.rating %} text-muted{% else %} text-warning{% endif %}"></i>
+                {% endfor %}
+            </div>
+            {% if task.review.comments %}
+            <div class="mt-2">
+                <strong>Comments:</strong>
+                <p>{{ task.review.comments }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <form method="POST" action="{{ url_for('submit_review', task_id=task.id) }}">
+            <div class="mb-3">
+                <label class="form-label">Rating (1-5)</label>
+                <select name="rating" class="form-select" required>
+                    <option value="">Select rating</option>
+                    <option value="1" {% if task.review and task.review.rating == 1 %}selected{% endif %}>1 - Poor</option>
+                    <option value="2" {% if task.review and task.review.rating == 2 %}selected{% endif %}>2 - Fair</option>
+                    <option value="3" {% if task.review and task.review.rating == 3 %}selected{% endif %}>3 - Good</option>
+                    <option value="4" {% if task.review and task.review.rating == 4 %}selected{% endif %}>4 - Very Good</option>
+                    <option value="5" {% if task.review and task.review.rating == 5 %}selected{% endif %}>5 - Excellent</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Comments</label>
+                <textarea name="comments" class="form-control">{% if task.review %}{{ task.review.comments }}{% endif %}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Update Button + Modal (Visible to Employee) -->
+{% if not is_leader and task.assigned_to == employee.id %}
+<div class="mt-4">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateTaskModal">
+        <i class="bi bi-pencil"></i> Update Task
+    </button>
+</div>
+
+<!-- Update Task Modal -->
+<div class="modal fade" id="updateTaskModal" tabindex="-1" aria-labelledby="updateTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateTaskModalLabel">Update Task: {{ task.title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('update_task', task_id=task.id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status*</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="Pending" {% if task.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="In Progress" {% if task.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                            <option value="Completed" {% if task.status == 'Completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="update_text" class="form-label">Update Details*</label>
+                        <textarea class="form-control" id="update_text" name="update_text" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

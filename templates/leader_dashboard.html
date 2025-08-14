@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2>Team Leader Dashboard</h2>
+    
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Tasks</h5>
+                    <p class="card-text display-4">{{ tasks|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Completed</h5>
+                    <p class="card-text display-4">{{ tasks|selectattr('status', 'equalto', 'Completed')|list|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">In Progress</h5>
+                    <p class="card-text display-4">{{ tasks|selectattr('status', 'equalto', 'In Progress')|list|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Today's Tasks</h5>
+                    <p class="card-text display-4">{{ today_tasks_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Members Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Team Members</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in team_members %}
+                    <tr>
+                        <td>{{ member.name }}</td>
+                        <td>{{ member.position }}</td>
+                        <td>{{ member.phone }}</td>
+                        <td>{{ member.email }}</td>
+                        <td>
+                            <a href="{{ url_for('employee_performance', employee_id=member.id) }}" 
+                               class="btn btn-sm btn-info">
+                                Performance
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- All Tasks Section with Enhanced Filters -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4>All Tasks</h4>
+            <div>
+                <a href="{{ url_for('download_tasks', 
+                                  status=request.args.get('status'),
+                                  assigned_to=request.args.get('assigned_to'),
+                                  priority=request.args.get('priority'),
+                                  date_range=request.args.get('date_range')) }}" 
+                   class="btn btn-success me-2">
+                    <i class="bi bi-file-earmark-excel"></i> Export Excel
+                </a>
+                <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                    <i class="bi bi-funnel"></i> Filters
+                </button>
+                {% if active_filters %}
+                <span class="badge bg-light text-dark ms-2">
+                    <i class="bi bi-exclamation-circle"></i> Filters Active
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Filter Panel -->
+        <div class="collapse {% if active_filters %}show{% endif %}" id="filterCollapse">
+            <div class="card-body border-bottom">
+                <form method="get" action="{{ url_for('home') }}">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="">All Statuses</option>
+                                <option value="Pending" {% if request.args.get('status') == 'Pending' %}selected{% endif %}>Pending</option>
+                                <option value="In Progress" {% if request.args.get('status') == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                <option value="Completed" {% if request.args.get('status') == 'Completed' %}selected{% endif %}>Completed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Assigned To</label>
+                            <select name="assigned_to" class="form-select">
+                                <option value="">All Employees</option>
+                                {% for member in team_members %}
+                                <option value="{{ member.id }}" {% if request.args.get('assigned_to') == member.id|string %}selected{% endif %}>
+                                    {{ member.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Priority</label>
+                            <select name="priority" class="form-select">
+                                <option value="">All Priorities</option>
+                                <option value="High" {% if request.args.get('priority') == 'High' %}selected{% endif %}>High</option>
+                                <option value="Medium" {% if request.args.get('priority') == 'Medium' %}selected{% endif %}>Medium</option>
+                                <option value="Low" {% if request.args.get('priority') == 'Low' %}selected{% endif %}>Low</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Date Range</label>
+                            <select name="date_range" class="form-select">
+                                <option value="">All Dates</option>
+                                <option value="today" {% if request.args.get('date_range') == 'today' %}selected{% endif %}>Today</option>
+                                <option value="week" {% if request.args.get('date_range') == 'week' %}selected{% endif %}>This Week</option>
+                                <option value="month" {% if request.args.get('date_range') == 'month' %}selected{% endif %}>This Month</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="bi bi-filter"></i> Apply
+                            </button>
+                            <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tasks Table -->
+        <div class="card-body">
+            {% if active_filters %}
+            <div class="alert alert-info mb-3">
+                Showing filtered results: 
+                {% if request.args.get('status') %}<span class="badge bg-info me-1">Status: {{ request.args.get('status') }}</span>{% endif %}
+                {% if request.args.get('assigned_to') %}<span class="badge bg-info me-1">Assigned To: {{ assigned_to_name }}</span>{% endif %}
+                {% if request.args.get('priority') %}<span class="badge bg-info me-1">Priority: {{ request.args.get('priority') }}</span>{% endif %}
+                {% if request.args.get('date_range') %}<span class="badge bg-info me-1">Date: {{ request.args.get('date_range') }}</span>{% endif %}
+            </div>
+            {% endif %}
+    
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Assigned To</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Deadline</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr>
+                        <td>{{ task.title }}</td>
+                        <td>{{ task.assignee.name if task.assignee else 'Unassigned' }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if task.status == 'Completed' %}bg-success
+                                {% elif task.status == 'In Progress' %}bg-primary
+                                {% else %}bg-secondary{% endif %}">
+                                {{ task.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if task.priority == 'High' %}bg-danger
+                                {% elif task.priority == 'Medium' %}bg-warning text-dark
+                                {% else %}bg-success{% endif %}">
+                                {{ task.priority }}
+                            </span>
+                        </td>
+                        <td>{{ task.deadline.strftime('%Y-%m-%d') if task.deadline else 'N/A' }}</td>
+                        <td>{{ task.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <a href="{{ url_for('task_details', task_id=task.id) }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

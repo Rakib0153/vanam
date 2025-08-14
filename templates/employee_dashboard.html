@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Welcome, {{ employee.name }}</h2>
+</div>
+
+<!-- Today's Tasks Section (New Addition) -->
+{% if todays_tasks %}
+<div class="card mb-4 border-primary">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Today's Tasks</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in todays_tasks %}
+                    <tr>
+                        <td>{{ task.title }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if task.status == 'Completed' %}bg-success
+                                {% elif task.status == 'In Progress' %}bg-primary
+                                {% else %}bg-secondary{% endif %}">
+                                {{ task.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if task.priority == 'High' %}bg-danger
+                                {% elif task.priority == 'Medium' %}bg-warning text-dark
+                                {% else %}bg-success{% endif %}">
+                                {{ task.priority }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('task_details', task_id=task.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#updateTaskModal{{ task.id }}">
+                                <i class="bi bi-pencil"></i> Update
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Existing Task Count Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body">
+                <h5 class="card-title">My Tasks</h5>
+                <p class="card-text display-4">{{ tasks|length }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Completed</h5>
+                <p class="card-text display-4">{{ tasks|selectattr('status', 'equalto', 'Completed')|list|length }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body">
+                <h5 class="card-title">In Progress</h5>
+                <p class="card-text display-4">{{ tasks|selectattr('status', 'equalto', 'In Progress')|list|length }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Existing Task Table -->
+<div class="card">
+    <div class="card-header">
+        <h5>All My Tasks</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Deadline</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr>
+                        <td>{{ task.title }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if task.status == 'Completed' %}bg-success
+                                {% elif task.status == 'In Progress' %}bg-primary
+                                {% else %}bg-secondary{% endif %}">
+                                {{ task.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if task.priority == 'High' %}bg-danger
+                                {% elif task.priority == 'Medium' %}bg-warning text-dark
+                                {% else %}bg-success{% endif %}">
+                                {{ task.priority }}
+                            </span>
+                        </td>
+                        <td>{{ task.deadline.strftime('%Y-%m-%d') if task.deadline else 'N/A' }}</td>
+                        <td>
+                            <a href="{{ url_for('task_details', task_id=task.id) }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#updateTaskModal{{ task.id }}">
+                                <i class="bi bi-pencil"></i> Update
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Existing Modals -->
+{% for task in todays_tasks + tasks %}
+<div class="modal fade" id="updateTaskModal{{ task.id }}" tabindex="-1" aria-labelledby="updateTaskModalLabel{{ task.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateTaskModalLabel{{ task.id }}">Update Task: {{ task.title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('update_task', task_id=task.id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="status{{ task.id }}" class="form-label">Status*</label>
+                        <select class="form-select" id="status{{ task.id }}" name="status" required>
+                            <option value="Pending" {% if task.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="In Progress" {% if task.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                            <option value="Completed" {% if task.status == 'Completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="update_text{{ task.id }}" class="form-label">Update Details*</label>
+                        <textarea class="form-control" id="update_text{{ task.id }}" name="update_text" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

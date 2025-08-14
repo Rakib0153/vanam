@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Task Dashboard</h2>z--
+    
+    <!-- Filter Controls -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="{{ url_for('view_tasks') }}">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label>Filter by Status:</label>
+                        <select name="filter" class="form-select">
+                            <option value="all" {% if current_filter == 'all' %}selected{% endif %}>All Tasks</option>
+                            <option value="my" {% if current_filter == 'my' %}selected{% endif %}>My Tasks</option>
+                            <option value="completed" {% if current_filter == 'completed' %}selected{% endif %}>Completed</option>
+                            <option value="in_progress" {% if current_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label>Filter by Employee:</label>
+                        <select name="employee_id" class="form-select">
+                            <option value="all">All Employees</option>
+                            {% for emp in employees %}
+                            <option value="{{ emp.id }}" {% if selected_employee == emp.id|string %}selected{% endif %}>
+                                {{ emp.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 align-self-end">
+                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Task List -->
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Assigned To</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Deadline</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr>
+                        <td>{{ task.title }}</td>
+                        <td>{{ task.assignee.name if task.assignee else 'Unassigned' }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if task.status == 'Completed' %}bg-success
+                                {% elif task.status == 'In Progress' %}bg-primary
+                                {% else %}bg-secondary{% endif %}">
+                                {{ task.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if task.priority == 'High' %}bg-danger
+                                {% elif task.priority == 'Medium' %}bg-warning text-dark
+                                {% else %}bg-success{% endif %}">
+                                {{ task.priority }}
+                            </span>
+                        </td>
+                        <td>{{ task.deadline.strftime('%Y-%m-%d') if task.deadline else 'N/A' }}</td>
+                        <td>
+                            <a href="{{ url_for('task_details', task_id=task.id) }}" class="btn btn-sm btn-primary">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

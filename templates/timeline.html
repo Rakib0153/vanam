@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Project Timeline</h2>
+    
+    <div class="timeline">
+        {% for event in events %}
+        <div class="timeline-item {% if event.type == 'task_created' %}created{% else %}updated{% endif %}">
+            <div class="timeline-date">
+                {{ event.date.strftime('%b %d, %Y %H:%M') }}
+            </div>
+            <div class="timeline-content">
+                <h5>{{ event.title }}</h5>
+                <p>{{ event.description }}</p>
+                {% if event.type == 'task_update' %}
+                <div class="update-details">
+                    <strong>Details:</strong> {{ event.details }}
+                </div>
+                {% endif %}
+                <a href="{{ url_for('task_details', task_id=event.task_id) }}" class="btn btn-sm btn-outline-primary">
+                    View Task
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 50px;
+    margin-top: 30px;
+}
+.timeline:before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+}
+.timeline-date {
+    position: absolute;
+    left: -50px;
+    width: 40px;
+    text-align: right;
+    color: #6c757d;
+}
+.timeline-content {
+    padding: 15px;
+    border-radius: 5px;
+    background: white;
+    border: 1px solid #dee2e6;
+}
+.timeline-item.created .timeline-content {
+    border-left: 3px solid #28a745;
+}
+.timeline-item.updated .timeline-content {
+    border-left: 3px solid #17a2b8;
+}
+.update-details {
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 3px;
+    margin-top: 10px;
+}
+</style>
+{% endblock %}

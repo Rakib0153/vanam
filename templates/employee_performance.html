@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Performance: {{ employee.name }}</h2>
+    <a href="{{ url_for('home') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">Task Completion</h5>
+                <div class="performance-score 
+                    {% if performance.task_completion_score >= 90 %}score-excellent
+                    {% elif performance.task_completion_score >= 70 %}score-good
+                    {% elif performance.task_completion_score >= 50 %}score-average
+                    {% else %}score-poor{% endif %}">
+                    {{ performance.task_completion_score }}%
+                </div>
+                <p class="card-text">Percentage of assigned tasks completed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">Timeliness</h5>
+                <div class="performance-score 
+                    {% if performance.timeliness_score >= 90 %}score-excellent
+                    {% elif performance.timeliness_score >= 70 %}score-good
+                    {% elif performance.timeliness_score >= 50 %}score-average
+                    {% else %}score-poor{% endif %}">
+                    {{ performance.timeliness_score }}%
+                </div>
+                <p class="card-text">Percentage of tasks completed on time</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">Quality</h5>
+                <div class="performance-score 
+                {% if performance.quality_score == 0 %}score-no-reviews
+                {% elif performance.quality_score >= 90 %}score-excellent
+                {% elif performance.quality_score >= 70 %}score-good
+                {% elif performance.quality_score >= 50 %}score-average
+                {% else %}score-poor{% endif %}">
+                {% if performance.quality_score == 0 %}
+                    No Reviews Yet
+                {% else %}
+                    {{ performance.quality_score }}%
+                {% endif %}
+            </div>
+            <p class="card-text">Quality score based on task reviews</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Task History</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Deadline</th>
+                        <th>Completion Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr>
+                        <td>{{ task.title }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if task.status == 'Completed' %}bg-success
+                                {% elif task.status == 'In Progress' %}bg-primary
+                                {% else %}bg-secondary{% endif %}">
+                                {{ task.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if task.priority == 'High' %}bg-danger
+                                {% elif task.priority == 'Medium' %}bg-warning text-dark
+                                {% else %}bg-success{% endif %}">
+                                {{ task.priority }}
+                            </span>
+                        </td>
+                        <td>{{ task.deadline.strftime('%Y-%m-%d') if task.deadline else 'N/A' }}</td>
+                        <td>
+                            {% if task.status == 'Completed' %}
+                                {{ task.updated_at.strftime('%Y-%m-%d') }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

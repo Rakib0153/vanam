@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Help Request Dashboard</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Requests</h5>
+                    <p class="card-text display-4">{{ total_requests }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Pending</h5>
+                    <p class="card-text display-4">{{ pending }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">In Progress</h5>
+                    <p class="card-text display-4">{{ in_progress }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Resolved</h5>
+                    <p class="card-text display-4">{{ done }}</p>
+                </div>
+            </div>
+        </div>
+        {% if is_leader %}
+        <div class="col-md-4">
+            <div class="card text-white bg-secondary">
+                <div class="card-body">
+                    <h5 class="card-title">Resolved Today</h5>
+                    <p class="card-text display-4">{{ resolved_today }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Avg TAT (hours)</h5>
+                    <p class="card-text display-4">{{ avg_tat }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-4">
+        {% if is_leader %}
+        <a href="{{ url_for('help_slip_management') }}" class="btn btn-primary me-md-2">
+            Manage Requests
+        </a>
+        {% endif %}
+        <a href="{{ url_for('help_slip') }}" class="btn btn-success">
+            New Help Request
+        </a>
+    </div>
+</div>
+{% endblock %}

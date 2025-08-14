@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>My Help Requests</h2>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Submitted</th>
+                <th>Assigned To</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for slip in slips %}
+            <tr>
+                <td>{{ slip.title }}</td>
+                <td>
+                    <span class="badge 
+                        {% if slip.status == 'Resolved' %}bg-success
+                        {% elif slip.status == 'In Progress' %}bg-primary
+                        {% else %}bg-secondary{% endif %}">
+                        {{ slip.status }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge 
+                        {% if slip.priority == 'High' %}bg-danger
+                        {% elif slip.priority == 'Medium' %}bg-warning text-dark
+                        {% else %}bg-success{% endif %}">
+                        {{ slip.priority }}
+                    </span>
+                </td>
+                <td>{{ slip.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ slip.assignee.name if slip.assignee else 'Not assigned' }}</td>
+                <td>{{ slip.remarks or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
